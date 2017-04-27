@@ -2,9 +2,10 @@ var express = require('express');
 var path = require('path');
 var logger = require('morgan');
 var bodyParser = require('body-parser');
-var neo4j = require('neo4j-driver').v1;
+var neo4j = require('neo4j-driver').v2;
 var apiController = require('./controllers/apiController');
 var port = require('./config/config').port;
+
 
 var app = express();
 
@@ -18,7 +19,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/api', apiController);
 
 //PORT LISTENING
-app.listen(port, () => {
+app.listen(port, function(){
   console.log('server is running on port ' + port + '...');
 });
 

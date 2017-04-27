@@ -8,10 +8,13 @@
   },
   "author": "",
   "license": "ISC",
-  "dependencies":{
-    "express": "*",
+  "dependencies": {
+    "bcrypt": "^1.0.2",
     "body-parser": "*",
+    "express": "*",
     "morgan": "*",
-    "neo4j-driver": "*"
+    "neo4j-driver": "*",
+    "passport": "^0.3.2",
+    "passport-local": "^1.0.0"
   }
 }

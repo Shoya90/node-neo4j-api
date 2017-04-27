@@ -1,4 +1,4 @@
-var neo4j = require('neo4j-driver').v1;
+var neo4j = require('neo4j-driver').v2;
 var driver = require('../config/config').neo4j_driver;
 
 //DB CONNECTION
