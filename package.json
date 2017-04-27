@@ -11,10 +11,14 @@
   "dependencies": {
     "bcrypt": "^1.0.2",
     "body-parser": "*",
+    "cookie-parser": "^1.4.3",
     "express": "*",
+    "express-session": "^1.15.2",
+    "lodash": "^4.17.4",
     "morgan": "*",
     "neo4j-driver": "*",
     "passport": "^0.3.2",
-    "passport-local": "^1.0.0"
+    "passport-local": "^1.0.0",
+    "uuid": "^3.0.1"
   }
 }
