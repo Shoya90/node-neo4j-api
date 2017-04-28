@@ -58,7 +58,6 @@ graph.createGraph = function(nodes, paths, building_id, floor_num, callback) {
         .then(function(result){
             if(!_.isEmpty(result.records)){
                 var floor_id = result.records[0]._fields[0].properties.id;
-                console.log(floor_id);
                 session
                     .run("MATCH(b:Building {id: {building_id}}), (f:Floor {id : {floor_id}}) MERGE(b)-[r:HAS_FLOOR {id : {id}}]->(f)",
                         {
@@ -71,15 +70,29 @@ graph.createGraph = function(nodes, paths, building_id, floor_num, callback) {
                         nodes.forEach(function(node) {
                             node_ids.push(uuid.v4());
                             session
-                                .run("CREATE (a:Node {name: {name}, x: {x}, y: {y}, type: {type}, id : {id}})",
-                                    {name: node.name,
+                                .run("CREATE (a:Node {name: {name}, x: {x}, y: {y}, type: {type}, id : {id}}) RETURN a",
+                                    {
+                                        name: node.name,
                                         x: node.x,
                                         y: node.y,
                                         type : node.type,
                                         id : _.last(node_ids)
                                     })
                                 .then(function(result) {
-                                    session.close();
+                                    var node_id = result.records[0]._fields[0].properties.id;
+                                    session
+                                        .run("MATCH(n:Node {id: {node_id}}), (f:Floor {id : {floor_id}}) CREATE(n)-[r:IS_ON_FLOOR {id : {id}}]->(f)",
+                                            {
+                                                id : uuid.v4(),
+                                                node_id : node_id,
+                                                floor_id : floor_id
+                                            })
+                                        .then(function (result) {
+                                            session.close();
+                                        })
+                                        .catch(function (err) {
+                                            if(err) throw err;
+                                        });
                                 })
                                 .catch(function(err){
                                     console.log(err);
@@ -88,26 +101,38 @@ graph.createGraph = function(nodes, paths, building_id, floor_num, callback) {
 
                         paths.forEach(function(path){
                             session
-                                .run("MATCH(s:Node {name: {start_id}}), (e:Node {name : {end_id}}) MERGE(s)-[r:IS_CONNECTED {length : {length}, id : {id}}]->(e) RETURN s,e",
-                                    {length : path.length,
-                                        id : uuid.v4(),
-                                        start_id : path.startNode.name,
-                                        end_id : path.endNode.name })
-                                .then(function(result) {
-                                    session.close();
+                                .run('MATCH(s:Node {name: {start_node}}), (e:Node { name: {end_node}}), (f:Floor {id: {floor_id}}) WHERE (s)-[r:IS_ON_FLOOR]->(f) return s,e',
+                                    {start_node : path.startNode.name, end_node: path.endNode.name, floor_id: floor_id})
+                                .then(function (result) {
+                                    console.log(result.records[0]._fields[0], result.records[0]._fields[1]);
+                                    if(!_.isEmpty(result.records)){
+                                        session
+                                            .run("MATCH(s:Node {id: {start_id}}), (e:Node {id : {end_id}}) CREATE(s)-[r:IS_CONNECTED {length : {length}, id : {id}}]->(e) RETURN s,e",
+                                                {
+                                                    length : path.length,
+                                                    id : uuid.v4(),
+                                                    start_id : result.records[0]._fields[0].properties.id,
+                                                    end_id : result.records[0]._fields[1].properties.id
+                                                })
+                                            .then(function(result) {
+                                                session.close();
+                                            })
+                                            .catch(function(err){
+                                                console.log(err);
+                                            });
+                                    }
                                 })
-                                .catch(function(err){
-                                    console.log(err);
+                                .catch(function (err) {
+                                    if(err) throw err;
                                 })
                         });
-                        // session.close();
 
-                        callback(null);
                     })
                     .catch(function(err){
                         console.log(err);
                     })
             }
+            callback(null);
         })
         .catch(function(err){
             console.log(err);
