@@ -19,6 +19,7 @@
     "neo4j-driver": "*",
     "passport": "^0.3.2",
     "passport-local": "^1.0.0",
+    "sessionstore": "^1.2.18",
     "uuid": "^3.0.1"
   }
 }
